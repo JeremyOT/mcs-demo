@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pinger
+  namespace: demos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pinger
+  template:
+    metadata:
+      labels:
+        app: pinger
+    spec:
+      containers:
+      - command:
+        - /pinger
+        - --address=http://demo.demos.svc.cluster.local
+        - --keep-alive=false
+        image: gcr.io/jeremyot-exp/pinger
+        imagePullPolicy: Always
+        name: pinger

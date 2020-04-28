@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  namespace: demos
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+      - command:
+        - /hello
+        - --tag=cluster-a
+        imagePullPolicy: Always
+        image: gcr.io/jeremyot-exp/hello
+        name: hello
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo
+  namespace: demos
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: demo
+  type: ClusterIP
+
+---
+apiVersion: multicluster.k8s.io/v1alpha1
+kind: ServiceExport
+metadata:
+  name: demo
+  namespace: demos
+
