@@ -33,9 +33,8 @@ spec:
   selector:
     app: demo
   type: ClusterIP
-
 ---
-apiVersion: multicluster.k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1alpha1
 kind: ServiceExport
 metadata:
   name: demo
