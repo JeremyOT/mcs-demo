@@ -14,28 +14,9 @@ function dryrun() {
   fi
 }
 
-function add_routes() {
-  cluster=$1
-  unset IFS
-  routes=$(kubectl --context $2 get nodes -o jsonpath='{range .items[*]}ip route add {.spec.podCIDR} via {.status.addresses[?(.type=="InternalIP")].address}{"\n"}')
-  echo "Connecting cluster ${cluster} to ${2}"
-
-  IFS=$'\n'
-  for n in $(kind get nodes --name "$cluster"); do
-    for r in $routes; do
-      eval "docker exec $n $r"
-    done
-  done
-  unset IFS
-}
 
 C1="kind-a"
 C2="kind-b"
-
-echo "Connecting cluster networks..."
-add_routes a ${C2}
-add_routes b ${C1}
-echo "Cluster networks connected"
 
 DEMO_AUTO_RUN=true
 
@@ -47,10 +28,6 @@ run "kubectl --context ${C1} apply -f yaml/demo-service-a.yaml"
 run "kubectl --context ${C1} apply -f yaml/pinger.yaml"
 run "kubectl --context ${C2} apply -f yaml/demo-service-b.yaml"
 run "kubectl --context ${C2} apply -f yaml/pinger.yaml"
-
-DEMO_AUTO_RUN=""
-run "cat yaml/demo-service-a.yaml"
-DEMO_AUTO_RUN=true
 
 PINGER_A=$(kubectl --context ${C1} get pods -n demos -l app=pinger -o go-template --template="{{(index .items 0).metadata.name}}")
 PINGER_B=$(kubectl --context ${C2} get pods -n demos -l app=pinger -o go-template --template="{{(index .items 0).metadata.name}}")
@@ -73,25 +50,21 @@ EP_2=$(kubectl --context ${C2} get endpointslice -n demos --template="{{(index .
 
 DEMO_RUN_FAST=true
 
-run "kubectl --context ${C1} get endpointslice -n demos ${EP_1} -o yaml | ./edit_meta --metadata '{name: imported-${EP_1}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo}}' > yaml/cluster-a-epslice.yaml"
-run "kubectl --context ${C2} get endpointslice -n demos ${EP_2} -o yaml | ./edit_meta --metadata '{name: imported-${EP_2}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo}}' > yaml/cluster-b-epslice.yaml"
+run "kubectl --context ${C1} get endpointslice -n demos ${EP_1} -o yaml | ./edit_meta --metadata '{name: imported-${EP_1}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo, service.kubernetes.io/service-proxy-name: multi-cluster}}' > yaml/cluster-a-epslice.yaml"
+run "kubectl --context ${C2} get endpointslice -n demos ${EP_2} -o yaml | ./edit_meta --metadata '{name: imported-${EP_2}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo, service.kubernetes.io/service-proxy-name: multi-cluster}}' > yaml/cluster-b-epslice.yaml"
 run "kubectl --context ${C1} apply -f yaml/cluster-b-epslice.yaml"
 run "kubectl --context ${C1} apply -f yaml/cluster-a-epslice.yaml"
 run "kubectl --context ${C2} apply -f yaml/cluster-b-epslice.yaml"
 run "kubectl --context ${C2} apply -f yaml/cluster-a-epslice.yaml"
-DEMO_AUTO_RUN=""
-run "cat yaml/cluster-a-epslice.yaml"
-DEMO_AUTO_RUN=true
-DEMO_RUN_FAST=""
 run "kubectl --context ${C1} get endpointslice -n demos"
 run "kubectl --context ${C2} get endpointslice -n demos"
 sleep 1
+DEMO_RUN_FAST=''
 
 desc 'Now the "Controller" creates the ServiceImport'
 
-DEMO_AUTO_RUN=""
-run "cat yaml/service-import.yaml"
-DEMO_AUTO_RUN=true
+cat yaml/service-import.yaml | grep -E -e '^' -e '([0-9]+\.)+[0-9]+'
+
 run "kubectl --context ${C1} apply -f yaml/service-import.yaml"
 run "kubectl --context ${C2} apply -f yaml/service-import.yaml"
 
