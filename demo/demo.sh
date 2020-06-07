@@ -50,8 +50,8 @@ EP_2=$(kubectl --context ${C2} get endpointslice -n demos --template="{{(index .
 
 DEMO_RUN_FAST=true
 
-run "kubectl --context ${C1} get endpointslice -n demos ${EP_1} -o yaml | ./edit_meta --metadata '{name: imported-${EP_1}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo, service.kubernetes.io/service-proxy-name: multi-cluster}}' > yaml/cluster-a-epslice.yaml"
-run "kubectl --context ${C2} get endpointslice -n demos ${EP_2} -o yaml | ./edit_meta --metadata '{name: imported-${EP_2}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo, service.kubernetes.io/service-proxy-name: multi-cluster}}' > yaml/cluster-b-epslice.yaml"
+run "kubectl --context ${C1} get endpointslice -n demos ${EP_1} -o yaml | ./edit_meta --metadata '{name: imported-${EP_1}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo}}' > yaml/cluster-a-epslice.yaml"
+run "kubectl --context ${C2} get endpointslice -n demos ${EP_2} -o yaml | ./edit_meta --metadata '{name: imported-${EP_2}, namespace: demos, labels: {multicluster.kubernetes.io/service-name: demo}}' > yaml/cluster-b-epslice.yaml"
 run "kubectl --context ${C1} apply -f yaml/cluster-b-epslice.yaml"
 run "kubectl --context ${C1} apply -f yaml/cluster-a-epslice.yaml"
 run "kubectl --context ${C2} apply -f yaml/cluster-b-epslice.yaml"
