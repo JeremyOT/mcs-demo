@@ -6,13 +6,13 @@ hacky implementation.
 1. Install [kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 2. Clone my hacky branch of K8s 1.18 to $GOPATH/src/k8s.io/kubernetes.
 ```
-git clone --single-branch --branch mcs-crd https://github.com/JeremyOT/kubernetes.git $GOPATH/src/k8s.io/kubernetes
+git clone --single-branch --branch mcs-api-staging https://github.com/JeremyOT/kubernetes.git $GOPATH/src/k8s.io/kubernetes
 ```
-3. Build K8s with MCS support. This assumes the mcs-crd branch is installed
+3. Build K8s with MCS support. This assumes the mcs-api-staging branch is installed
    in your $GOPATH as k8s.io/kubernetes. Set `$KUBEROOT` if using another
    location.
 ```
-./prepare-mcs-proxy.sh
+./prepare-mcs-image.sh
 ```
 4. Create local clusters, connect their networks, and enable Multi-Cluster
    Services by installing the MCS CRDs.
